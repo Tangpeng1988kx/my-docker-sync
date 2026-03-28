@@ -1,5 +1,7 @@
 name: Docker Mirror Sync
+
 on: [push]
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -8,10 +10,20 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
+          # 这里保持不变，登录名不区分大小写
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Pull and Push
         run: |
+          # 1. 拉取原始镜像
           docker pull fredliang/derper:latest
-          docker tag fredliang/derper:latest ghcr.io/${{ github.actor }}/derper:latest
-          docker push ghcr.io/${{ github.actor }}/derper:latest
+          
+          # 2. 将用户名转换为小写并存入变量
+          IMAGE_REPOSITORY=$(echo "ghcr.io/${{ github.actor }}/derper:latest" | tr '[:upper:]' '[:lower:]')
+          
+          # 3. 打标签并推送到你的私有仓库
+          docker tag fredliang/derper:latest $IMAGE_REPOSITORY
+          docker push $IMAGE_REPOSITORY
+          
+          echo "镜像已成功推送到: $IMAGE_REPOSITORY"
