@@ -1,0 +1,17 @@
+name: Docker Mirror Sync
+on: [push]
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull and Push
+        run: |
+          docker pull fredliang/derper:latest
+          docker tag fredliang/derper:latest ghcr.io/${{ github.actor }}/derper:latest
+          docker push ghcr.io/${{ github.actor }}/derper:latest
